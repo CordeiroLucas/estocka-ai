@@ -39,6 +39,7 @@ Um sistema de gerenciamento de estoque escalável, seguro e moderno, desenvolvid
 * **Gerenciador de Pacotes:** pip (Standard).
 * **Frontend:** HTML5, CSS3, JavaScript, Bootstrap 5.3.
 * **Deploy:** Vercel (Serverless Functions via `api/index.py`).
+* **Database:** Neon.tech (PostgreSQL)
 * **Static Files:** Whitenoise (Compressão e Cache).
 
 ---
