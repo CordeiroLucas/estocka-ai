@@ -1,6 +1,6 @@
-# 📦 Estocka-Ai - Sistema de Controle de Estoque
+# 📦 Estocka-Ai - Sistema de Controle de Estoque v1.7
 
-Um sistema de gerenciamento de estoque escalável, seguro e moderno, desenvolvido com **Django**. O projeto utiliza uma arquitetura robusta com validações de integridade, interface **Mobile-First** para operações rápidas e está totalmente configurado para deploy serverless na **Vercel**.
+Um sistema de gerenciamento de estoque escalável, seguro e moderno, desenvolvido com **Django**. O projeto utiliza uma arquitetura robusta com validações de integridade, interface **Mobile-First** para operações rápidas e está totalmente configurado para deploy na **Vercel** com banco de dados hospedado no Neon.tech utilizando **PostgreSQL**.
 
 ---
 
