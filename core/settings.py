@@ -13,9 +13,33 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+import subprocess
 import dj_database_url
 
 load_dotenv()
+
+
+def get_git_version():
+    """
+    Tenta pegar a versão via comando git.
+    Se falhar (ex: em produção sem .git), retorna None.
+    """
+    try:
+        # 'git describe --tags' pega a tag mais recente. 
+        # Adicionei --abbrev=0 para pegar só a tag limpa (v1.0.0)
+        version = subprocess.check_output(
+            ["git", "describe", "--tags", "--abbrev=0"], 
+            stderr=subprocess.DEVNULL
+        )
+        return version.strip().decode('utf-8')
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
+
+# LÓGICA HÍBRIDA (A Melhor Prática)
+# 1. Tenta pegar de uma variável de ambiente (Ideal para Docker/Prod)
+# 2. Se não tiver, tenta rodar o comando git (Ideal para Dev Local)
+# 3. Se falhar tudo, define um fallback
+VERSION = os.getenv('PROJECT_VERSION') or get_git_version() or '0.0.0-dev'
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -64,6 +88,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                'core.context_processors.project_version',
             ],
         },
     },
