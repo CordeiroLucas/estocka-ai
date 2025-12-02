@@ -112,36 +112,36 @@ def recalcular_estoque(request):
 
     return redirect('dashboard')
 
-@login_required
-def registrar_movimentacao(request):
-    if request.method == 'POST':
-        form = MovimentacaoForm(request.POST)
-        if form.is_valid():
-            try:
-                with transaction.atomic():
-                    movimentacao = form.save(commit=False)
+# @login_required
+# def registrar_movimentacao(request):
+#     if request.method == 'POST':
+#         form = MovimentacaoForm(request.POST)
+#         if form.is_valid():
+#             try:
+#                 with transaction.atomic():
+#                     movimentacao = form.save(commit=False)
                     
-                    # 1. ORIGEM (Responsável): Pega automaticamente do login
-                    movimentacao.usuario = request.user 
+#                     # 1. ORIGEM (Responsável): Pega automaticamente do login
+#                     movimentacao.usuario = request.user 
                     
-                    # 2. DESTINO (Solicitante):
-                    # Se o campo de texto estiver vazio, assumimos que o responsável pegou para si mesmo
-                    if not movimentacao.solicitante_nome:
-                        movimentacao.solicitante_nome = request.user.get_full_name() or request.user.username
+#                     # 2. DESTINO (Solicitante):
+#                     # Se o campo de texto estiver vazio, assumimos que o responsável pegou para si mesmo
+#                     if not movimentacao.solicitante_nome:
+#                         movimentacao.solicitante_nome = request.user.get_full_name() or request.user.username
 
-                    movimentacao.save()
+#                     movimentacao.save()
                     
-                messages.success(request, "Movimentação registrada com sucesso!")
-                return redirect('dashboard')
-            except ValidationError as e:
-                form.add_error(None, e)
-    else:
-        form = MovimentacaoForm()
+#                 messages.success(request, "Movimentação registrada com sucesso!")
+#                 return redirect('dashboard')
+#             except ValidationError as e:
+#                 form.add_error(None, e)
+#     else:
+#         form = MovimentacaoForm()
 
-    # ... (resto do código igual) ...
-    produtos_data = Produto.objects.all().values('id', 'nome', 'quantidade', 'categoria_id').order_by('nome')
-    context = {'form': form, 'produtos_data': list(produtos_data)}
-    return render(request, 'estoque/form_movimentacao.html', context)
+#     # ... (resto do código igual) ...
+#     produtos_data = Produto.objects.all().values('id', 'nome', 'quantidade', 'categoria_id').order_by('nome')
+#     context = {'form': form, 'produtos_data': list(produtos_data)}
+#     return render(request, 'estoque/form_movimentacao.html', context)
 
 @login_required
 def historico_movimentacoes(request):
@@ -259,32 +259,58 @@ def exportar_relatorio(request):
 
 @login_required
 def registrar_saida_rapida(request):
+    # Define o valor inicial como 'S' (Saída) para o Admin ver marcado
+    initial_data = {'tipo': 'S'}
+
     if request.method == 'POST':
-        form = SaidaRapidaForm(request.POST)
+        form = SaidaRapidaForm(request.POST, initial=initial_data)
         if form.is_valid():
             try:
                 with transaction.atomic():
                     movimentacao = form.save(commit=False)
-                    movimentacao.tipo = 'S'
-                    # 1. ORIGEM: Automático
-                    movimentacao.usuario = request.user
-                    # 2. DESTINO: Na saída rápida mobile, geralmente é para o próprio usuário
-                    # Mas se quiser deixar vazio ou preencher, aqui definimos o padrão:
-                    movimentacao.solicitante_nome = "Saída Rápida"
-                    movimentacao.solicitante_cpf = None
+                    
+                    # --- LÓGICA CONDICIONAL ADMIN vs USUÁRIO ---
+                    
+                    if request.user.is_superuser:
+                        # 1. ADMIN: Pode escolher o tipo e preencher detalhes
+                        # Se o admin não marcou nada (erro raro), assume Saída
+                        if not movimentacao.tipo:
+                            movimentacao.tipo = 'S'
+                            
+                        # Origem: O Admin logado
+                        movimentacao.usuario = request.user
+                        
+                        # Destino: Se preencheu o nome, usa. Se não, usa "Ajuste Admin" ou o próprio nome
+                        if not movimentacao.solicitante_nome:
+                             movimentacao.solicitante_nome = request.user.get_full_name() or request.user.username
+
+                    else:
+                        # 2. USUÁRIO COMUM: Força Saída e ignora campos extras
+                        movimentacao.tipo = 'S'
+                        movimentacao.usuario = request.user
+                        movimentacao.solicitante_nome = request.user.get_full_name() or request.user.username
+                        movimentacao.solicitante_cpf = None # Usuário comum não preenche CPF aqui
+                    
+                    # -------------------------------------------
+
                     movimentacao.save()
                     
-                messages.success(request, f"Saída registrada!")
+                # Mensagem dinâmica dependendo se foi Entrada ou Saída
+                tipo_msg = "Entrada" if movimentacao.tipo == 'E' else "Saída"
+                messages.success(request, f"{tipo_msg} de {movimentacao.quantidade}x {movimentacao.produto.nome} registrada!")
+                
+                return redirect('registrar_saida_rapida')
+            
             except ValidationError as e:
                 form.add_error(None, e)
     else:
-        form = SaidaRapidaForm()
+        form = SaidaRapidaForm(initial=initial_data)
 
     produtos_data = Produto.objects.all().values('id', 'nome', 'quantidade', 'categoria_id').order_by('nome')
 
     context = {
         'form': form,
-        'produtos_data': list(produtos_data) # Convertemos para lista para o JS ler
+        'produtos_data': list(produtos_data)
     }
 
     return render(request, 'estoque/saida_rapida.html', context)
