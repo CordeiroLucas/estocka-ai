@@ -27,29 +27,8 @@
                     {% csrf_token %}
 
                     <div class="row g-3">
-                        <div class="col-12">
-                            <label class="form-label fw-bold text-muted small text-uppercase mb-2">Tipo de Operação</label>
-                            
-                            <div class="d-flex gap-2 w-100">
-                                <input type="radio" class="btn-check" name="tipo" id="option_entrada" value="E" 
-                                    {% if form.tipo.value == 'E' %}checked{% endif %} required>
-                                <label class="btn btn-outline-success flex-fill py-3 fw-bold shadow-sm" for="option_entrada">
-                                    <i class="bi bi-box-arrow-in-down me-2"></i> ENTRADA
-                                </label>
 
-                                <input type="radio" class="btn-check" name="tipo" id="option_saida" value="S" 
-                                    {% if form.tipo.value == 'S' %}checked{% endif %}>
-                                <label class="btn btn-outline-danger flex-fill py-3 fw-bold shadow-sm" for="option_saida">
-                                    <i class="bi bi-box-arrow-up text-danger-emphasis me-2"></i> SAÍDA
-                                </label>
-                            </div>
-                            
-                            {% if form.tipo.errors %}
-                                <div class="text-danger small mt-1">{{ form.tipo.errors.0 }}</div>
-                            {% endif %}
-                        </div>
 
-                        <hr class="text-muted opacity-25 my-4">
 
                         <div class="col-md-6">
                             <label class="form-label fw-bold text-muted small text-uppercase">Categoria</label>

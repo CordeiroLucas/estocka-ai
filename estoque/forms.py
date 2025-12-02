@@ -100,7 +100,7 @@ class MovimentacaoForm(forms.ModelForm):
         return cpf_limpo # Retorna o CPF limpo (apenas números) para o banco
     
 class SaidaRapidaForm(forms.ModelForm):
-# Campo extra apenas para o filtro (required=False pois validamos no front)
+    # Campo "virtual" de categoria para filtro
     categoria = forms.ModelChoiceField(
         queryset=Categoria.objects.all(),
         required=False,
@@ -110,13 +110,26 @@ class SaidaRapidaForm(forms.ModelForm):
 
     class Meta:
         model = Movimentacao
-        fields = ['categoria', 'produto', 'quantidade'] # Adicionamos categoria na ordem
+        # Adicionamos 'tipo', 'solicitante_nome' e 'solicitante_cpf'
+        fields = ['tipo', 'categoria', 'produto', 'quantidade', 'solicitante_nome', 'solicitante_cpf']
+        
         widgets = {
-            'produto': forms.Select(attrs={'class': 'form-select form-select-lg', 'disabled': 'true'}), # Começa desativado
+            # Widget de Radio para o Tipo (igual ao form completo)
+            'tipo': forms.RadioSelect(attrs={'class': 'btn-check'}),
+            
+            'produto': forms.Select(attrs={'class': 'form-select form-select-lg', 'disabled': 'true'}),
             'quantidade': forms.NumberInput(attrs={'class': 'form-control form-control-lg text-center', 'inputmode': 'numeric'}),
+            
+            # Widgets para os detalhes (Admin)
+            'solicitante_nome': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nome do Solicitante'}),
+            'solicitante_cpf': forms.TextInput(attrs={'class': 'form-control', 'id': 'id_cpf_rapido', 'placeholder': '000.000.000-00'}),
         }
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Carrega os produtos ordenados por nome para ficar bonito
         self.fields['produto'].queryset = Produto.objects.all().order_by('nome')
+        
+        # IMPORTANTE: Definir como não obrigatórios, pois o usuário comum não os preenche
+        self.fields['tipo'].required = False
+        self.fields['solicitante_nome'].required = False
+        self.fields['solicitante_cpf'].required = False

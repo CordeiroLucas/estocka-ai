@@ -7,7 +7,7 @@
     <div class="col-12 col-md-6 col-lg-4">
         
         <div class="d-flex align-items-center justify-content-between mb-3">
-            <h4 class="mb-0 fw-bold"><i class="bi bi-tablet text-danger"></i> Saída Rápida</h4>
+            <h4 class="mb-0 fw-bold"><i class="bi bi-tablet text-danger"></i>Registrar Movimentação</h4>
             {% if user.is_superuser %}
             <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-secondary rounded-pill">
                 <i class="bi bi-x-lg"></i> Fechar
@@ -25,19 +25,38 @@
                         <div class="alert alert-danger border-danger border-2 rounded-3 mb-4 animate__animated animate__shakeX">
                             <div class="d-flex align-items-center mb-1">
                                 <i class="bi bi-x-octagon-fill fs-3 me-2"></i>
-                                <h5 class="mb-0 fw-bold">Erro</h5>
+                                <h5 class="mb-0 fw-bold">Atenção</h5>
                             </div>
                             <div class="small fw-semibold">{{ form.non_field_errors.0 }}</div>
                         </div>
                     {% endif %}
 
+                    {% if user.is_superuser %}
+                        <div class="mb-4">
+                            <label class="form-label text-muted small fw-bold text-uppercase">Tipo de Operação</label>
+                            <div class="d-flex gap-2 w-100">
+                                <input type="radio" class="btn-check" name="tipo" id="opt_saida" value="S" {% if form.tipo.value == 'S' %}checked{% endif %}>
+                                <label class="btn btn-outline-danger flex-fill py-2 fw-bold shadow-sm" for="opt_saida">
+                                    <i class="bi bi-box-arrow-up me-1"></i> SAÍDA
+                                </label>
+
+                                <input type="radio" class="btn-check" name="tipo" id="opt_entrada" value="E" {% if form.tipo.value == 'E' %}checked{% endif %}>
+                                <label class="btn btn-outline-success flex-fill py-2 fw-bold shadow-sm" for="opt_entrada">
+                                    <i class="bi bi-box-arrow-in-down me-1"></i> ENTRADA
+                                </label>
+                            </div>
+                        </div>
+                        <hr class="text-muted opacity-25 mb-4">
+                    {% endif %}
+
+
                     <div class="mb-3">
-                        <label class="form-label text-muted small fw-bold text-uppercase">1. Categoria</label>
+                        <label class="form-label text-muted small fw-bold text-uppercase">Categoria</label>
                         {{ form.categoria }}
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label text-muted small fw-bold text-uppercase">2. Produto</label>
+                        <label class="form-label text-muted small fw-bold text-uppercase">Produto</label>
                         {{ form.produto }}
                         {% if form.produto.errors %}
                             <div class="text-danger small mt-1">{{ form.produto.errors.0 }}</div>
@@ -45,7 +64,7 @@
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label text-muted small fw-bold text-uppercase">3. Quantidade</label>
+                        <label class="form-label text-muted small fw-bold text-uppercase">Quantidade</label>
                         <div class="input-group input-group-lg">
                             <button type="button" class="btn btn-outline-secondary" onclick="ajustarQtd(-1)"><i class="bi bi-dash-lg"></i></button>
                             {{ form.quantidade }}
@@ -56,9 +75,32 @@
                         {% endif %}
                     </div>
 
-                    <div class="d-grid gap-2 mt-5">
-                        <button type="submit" class="btn btn-danger btn-lg rounded-pill py-3 fw-bold shadow-sm">
-                            CONFIRMAR SAÍDA
+
+                    {% if user.is_superuser %}
+                        <div class="mb-4">
+                            <button class="btn btn-sm btn-link text-decoration-none text-muted p-0 d-flex align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#areaDetalhes" aria-expanded="false">
+                                <i class="bi bi-caret-right-fill me-1"></i> Detalhar Movimentação (Opcional)
+                            </button>
+                            
+                            <div class="collapse mt-3" id="areaDetalhes">
+                                <div class="card card-body admin-details-box border-0 p-4">
+                                    <div class="mb-2">
+                                        <label class="form-label fw-bold mb-1">Nome do Solicitante</label>
+                                        {{ form.solicitante_nome }}
+                                    </div>
+                                    <div>
+                                        <label class="form-label fw-bold mb-1">CPF</label>
+                                        {{ form.solicitante_cpf }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg rounded-pill py-3 fw-bold shadow-sm">
+                            CONFIRMAR
                         </button>
                     </div>
 
@@ -132,19 +174,90 @@
         // Roda uma vez ao carregar (caso o navegador tenha guardado o valor num refresh)
         filtrarProdutos();
     });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const cpfInput = document.getElementById('id_cpf_rapido');
+        // Só aplica máscara se o elemento existir na tela (Admin)
+        if (cpfInput) {
+            cpfInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, "");
+                if (value.length > 11) value = value.slice(0, 11);
+                if (value.length > 9) value = value.replace(/^(\d{3})(\d{3})(\d{3})(\d{2}).*/, "$1.$2.$3-$4");
+                else if (value.length > 6) value = value.replace(/^(\d{3})(\d{3})(\d{3}).*/, "$1.$2.$3");
+                else if (value.length > 3) value = value.replace(/^(\d{3})(\d{3}).*/, "$1.$2");
+                e.target.value = value;
+            });
+        }
+    });
+    
+    // Animação da setinha do botão de detalhes
+    const collapseElement = document.getElementById('areaDetalhes')
+    if (collapseElement) {
+        collapseElement.addEventListener('show.bs.collapse', function () {
+            this.previousElementSibling.querySelector('i').classList.add('rotate-90');
+        });
+        collapseElement.addEventListener('hide.bs.collapse', function () {
+            this.previousElementSibling.querySelector('i').classList.remove('rotate-90');
+        });
+    }
 </script>
 
 <style>
-    /* Ajustes para Mobile e Dark Mode */
-    [data-bs-theme="dark"] .form-select-lg,
-    [data-bs-theme="dark"] .form-control-lg {
-        background-color: var(--bg-body);
-        border-color: #495057;
-        color: var(--text-main);
+    /* Animação da setinha */
+    .rotate-90 { transform: rotate(90deg); transition: transform 0.2s; }
+    button[data-bs-toggle="collapse"] i { transition: transform 0.2s; }
+
+    /* --- CSS ADAPTATIVO PARA A CAIXA DE DETALHES --- */
+
+    /* 1. MODO CLARO (Padrão) */
+    .admin-details-box {
+        background-color: #f8f9fa; /* Fundo Cinza Claro (Bootstrap Light) */
+        color: #212529;            /* Texto Escuro */
+        border: 1px solid #dee2e6; /* Borda suave */
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* Sombra leve */
     }
-    .form-control:focus, .form-select:focus {
-        border-color: #dc3545;
-        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+
+    /* Inputs no Modo CLARO */
+    .admin-details-box .form-control {
+        background-color: #ffffff;
+        border-color: #ced4da;
+        color: #212529;
+    }
+    
+    .admin-details-box .form-label {
+        color: #495057; /* Label cinza escuro */
+        font-weight: 600;
+    }
+
+    /* 2. MODO ESCURO (Override) */
+    /* Ocorre apenas quando o tema for dark */
+    [data-bs-theme="dark"] .admin-details-box {
+        background-color: #2b3035; /* Fundo Cinza Chumbo */
+        color: #e9ecef;            /* Texto Claro */
+        border-color: #495057;     /* Borda mais escura */
+        box-shadow: none;
+    }
+
+    /* Inputs no Modo ESCURO */
+    [data-bs-theme="dark"] .admin-details-box .form-control {
+        background-color: rgba(255, 255, 255, 0.05); /* Transparente */
+        border-color: rgba(255, 255, 255, 0.2);
+        color: #fff; /* Texto Branco */
+    }
+    
+    [data-bs-theme="dark"] .admin-details-box .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    [data-bs-theme="dark"] .admin-details-box .form-label {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Foco dos Inputs (Comum para os dois) */
+    .admin-details-box .form-control:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
     }
 </style>
 {% endblock %}

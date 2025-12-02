@@ -9,9 +9,9 @@
         
         <div class="col-md-5">
             <div class="d-flex gap-2 flex-wrap">
-                <a href="{% url 'registrar_movimentacao' %}" class="btn btn-primary text-nowrap">
+                {% comment %} <a href="{% url 'registrar_movimentacao' %}" class="btn btn-primary text-nowrap">
                     <i class="bi bi-plus-circle"></i> Nova Movimentação
-                </a>
+                </a> {% endcomment %}
                 <a href="{% url 'registrar_saida_rapida' %}" class="btn btn-danger text-nowrap shadow-sm">
                     <i class="bi bi-tablet"></i> Registro Rápido
                 </a>
@@ -20,11 +20,11 @@
                     <i class="bi bi-clock-history"></i> Ver Histórico
                 </a>
                 
-                {% if user.is_superuser %}
+                {% comment %} {% if user.is_superuser %}
                     <a href="{% url 'recalcular_estoque' %}" class="btn btn-warning text-nowrap shadow-sm" title="Recalcular saldos baseados no histórico" onclick="return confirm('Tem certeza? Isso vai recalcular o saldo de TODOS os produtos com base no histórico.')">
                         <i class="bi bi-arrow-repeat"></i> Sincronizar
                     </a>
-                {% endif %}
+                {% endif %} {% endcomment %}
             </div>
         </div>
 
