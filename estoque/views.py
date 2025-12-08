@@ -36,7 +36,7 @@ class CustomLoginView(LoginView):
 
 @login_required
 def dashboard(request):
-    if not request.user.is_superuser:
+    if not request.user.is_superuser and not request.user.is_staff:
         return redirect('registrar_saida_rapida')
 
     # 1. Começa com todos os produtos
@@ -79,7 +79,7 @@ def dashboard(request):
 @login_required
 def recalcular_estoque(request):
     # 1. Segurança: Só admin pode fazer isso
-    if not request.user.is_superuser:
+    if not request.user.is_superuser and not request.user.is_staff:
         return redirect('registrar_saida_rapida')
 
     produtos = Produto.objects.all()
@@ -146,7 +146,7 @@ def recalcular_estoque(request):
 @login_required
 def historico_movimentacoes(request):
     # 1. TRAVA DE SEGURANÇA (Mantendo o que fizemos antes)
-    if not request.user.is_superuser:
+    if not request.user.is_superuser and not request.user.is_staff:
         return redirect('saida_rapida')
 
     # 2. BASE DA CONSULTA
