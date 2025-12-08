@@ -8,7 +8,7 @@
         
         <div class="d-flex align-items-center justify-content-between mb-3">
             <h4 class="mb-0 fw-bold"><i class="bi bi-tablet text-danger"></i>Registrar Movimentação</h4>
-            {% if user.is_superuser %}
+            {% if user.is_superuser or user.is_staff %}
             <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-secondary rounded-pill">
                 <i class="bi bi-x-lg"></i> Fechar
             </a>

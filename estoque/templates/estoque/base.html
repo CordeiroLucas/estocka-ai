@@ -105,7 +105,7 @@
 
 <nav class="navbar sticky-top navbar-expand-lg navbar-custom mb-4 px-4">
         <div class="container-fluid">
-            <a class="navbar-brand fw-bold" href="{% if user.is_authenticated and user.is_superuser %}{% url 'dashboard' %}{% else %}{% url 'registrar_saida_rapida' %}{% endif %}">
+            <a class="navbar-brand fw-bold" href="{% if user.is_authenticated and user.is_superuser or user.is_staff %}{% url 'dashboard' %}{% else %}{% url 'registrar_saida_rapida' %}{% endif %}">
                 <i class="bi bi-box-seam"></i> Estocka-Ai
             </a>
             
