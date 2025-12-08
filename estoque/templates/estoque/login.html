@@ -17,6 +17,12 @@
                     <p class="text-muted small">Gerenciamento de Estoque</p>
                 </div>
 
+                
+                {% if TEST %}
+                    <div class="alert alert-warning">BANCO TESTE <br> login: usuario <br> senha: usuario</div>
+                {% endif %}
+                    
+
                 <form method="post">
                     {% csrf_token %}
                     

@@ -49,6 +49,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 DEBUG = os.environ.get("DEBUG") == "True"
+TEST = os.environ.get("TEST") == "True"
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
 
@@ -89,6 +90,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 'core.context_processors.project_version',
+                'core.context_processors.test_mode',
             ],
         },
     },

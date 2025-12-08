@@ -120,7 +120,12 @@
                         <a href="{% url 'admin:index' %}" class="btn btn-outline-warning btn-sm me-3" title="Painel Administrativo">
                             <i class="bi bi-shield-lock-fill"></i> Admin
                         </a>
+                    {% elif user.is_staff %}
+                        <a href="{% url 'admin:index' %}" class="btn btn-outline-primary btn-sm me-3" title="Dashboard">
+                            <i class="bi bi-speedometer2"></i> Controle
+                        </a>
                     {% endif %}
+                        
 
                     <form action="{% url 'logout' %}" method="post" class="d-inline">
                         {% csrf_token %}

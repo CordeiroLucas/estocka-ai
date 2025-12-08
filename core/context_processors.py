@@ -7,3 +7,11 @@ def project_version(request):
     return {
         'APP_VERSION': settings.VERSION
     }
+
+def test_mode(request):
+    """
+    Retorna o status do modo debug para o contexto dos templates.
+    """
+    return {
+        'TEST': settings.TEST
+    }
