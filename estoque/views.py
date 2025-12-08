@@ -171,8 +171,7 @@ def historico_movimentacoes(request):
     if data_fim:
         movimentacoes = movimentacoes.filter(created_at__date__lte=data_fim)
 
-    # 4. PAGINAÇÃO (AQUI É A NOVIDADE)
-    paginator = Paginator(movimentacoes, 10) # 20 itens por página
+    paginator = Paginator(movimentacoes, 10) # 10 itens por página
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 

@@ -7,14 +7,17 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
 django.setup()
 
 # 2. Importa os Models (só funciona depois do django.setup())
-from estoque.models import Categoria, Produto
+from estoque.models import Categoria, Produto, Movimentacao
 from django.contrib.auth.models import User
 
-def popular():
-    print("🚀 Iniciando povoamento do banco de dados...\n")
+def migrate():
+    from django.core.management import call_command
+    print("\n🔄 Aplicando migrações do banco de dados...\n")
+    call_command("migrate", interactive=False)
+    print("✅ Migrações aplicadas com sucesso.\n")
 
-    # --- PARTE 1: CRIAR SUPERUSUÁRIO (ADMIN) ---
-    print("👤 Verificando usuário Admin...")
+def inicializar_usuarios():
+    print("\n👤 Verificando usuário Admin...\n")
     if not User.objects.filter(username='admin').exists():
         # Cria o superusuário (usuario, email, senha)
         User.objects.create_superuser('admin', 'admin@exemplo.com', 'admin')
@@ -22,29 +25,39 @@ def popular():
     else:
         print("   ℹ️ Superusuário 'admin' já existe.")
 
-    print("-" * 30)
+    print("👤 Verificando usuário Usuário...\n")
+    if not User.objects.filter(username='usuario').exists():
+        # Cria o usuário comum (usuario, email, senha)
+        User.objects.create_user('usuario', 'usuario@exemplo.com', 'usuario')
+        print("   ✅ Usuário 'usuario' criado com senha 'usuario'.")
+    else:
+        print("   ℹ️ Usuário 'usuario' já existe.")
+
+def popular():
+    print("\n🚀 Iniciando povoamento do banco de dados...\n")
 
     # Estrutura de dados solicitada
     dados = {
         "Cookies": [
-            "Negresco",
+            "Nestle Cookies",
         ],
         "Cervejas": [
-            "Amstel",
+            "Amstel Lager",
+            "Budweiser",
         ],
         "Refrigerantes": [
-            "Guaraná",
+            "Guaraná Zero",
             "Pepsi Zero",
-            "Coca-Cola Original",
-            "Coca-Cola Zero",
+            "Pepsi",
         ],
         "Capsulas": [
-            "Espresso Intenso",
+            "Capuccino Avela",
             "Cappuccino",
-            "Chocolatto"
+            "Chocolatto",
+            "Capuccino Doce de Leite",
+            "Chocolatto Caramello",
         ],
         "Salgadinho": [
-            "Cheetos",
             "Cebolitos",
             "Doritos",
             "Torcida Churrasco",
@@ -92,7 +105,42 @@ def popular():
                     print(f"   └── ℹ️ Já existe: {produto_nome}")
 
     print("\n✨ Concluído! O banco de dados foi populado com sucesso.")
+    
+def popular_movimentos():
+    movimentaco = Movimentacao.objects.all()
+    if movimentaco.exists():
+        print("ℹ️ Movimentações já existem no banco. Pulando povoamento de movimentações.")
+        return
+    print("\n🚀 Iniciando povoamento de movimentações...\n")
 
+    produtos = list(Produto.objects.all())
+    tipos = ['E', 'S']  # Entrada e Saída
+    for _ in range(500):  # Cria 500 movimentações
+        produto = random.choice(produtos)
+        tipo = random.choice(tipos)
+        quantidade = random.randint(1, 20)
+        observacao = "Movimentação automática para teste."
+        destinatario = "Teste Sistema"
+        destinatario_cpf = str(random.randint(1,9))*11  # CPF fictício
+        try:
+            Movimentacao.objects.create(
+                produto=produto,
+                tipo=tipo,
+                quantidade=quantidade,
+                usuario=User.objects.get(username='admin') if User.objects.filter(username='admin').exists() else "Teste Sistema",
+                solicitante_nome=destinatario,
+                solicitante_cpf=destinatario_cpf,
+                observacao=observacao,
+            )
+            print(f"   └── ➕ Movimentação criada: {tipo} de {quantidade} unidades de {produto.nome}")
+        except Exception as e:
+            print(f"   └── ❌ Erro ao criar movimentação para {produto.nome}: {e}")
+    
+def build():
+    migrate()
+    inicializar_usuarios()
+    popular()
+    popular_movimentos()
 
 if __name__ == "__main__":
-    popular()
+    build()
